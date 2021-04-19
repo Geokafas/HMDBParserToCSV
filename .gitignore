@@ -1,3 +1,6 @@
 /HMDBParserToCSV.iml
 /.idea/
 /out/
+/examples
+hmdbMetabolites2.zip
+.~lock.hmdbMetabolites.csv#

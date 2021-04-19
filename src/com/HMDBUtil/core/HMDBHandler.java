@@ -98,7 +98,7 @@ public class HMDBHandler extends DefaultHandler {
 
             }else{
                 //when a closing tag is found delete that entry from the heap
-                deleteFromHeap();
+                deleteFromHeap(qName);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -152,9 +152,17 @@ public class HMDBHandler extends DefaultHandler {
 
     //this method removes an entry from the heap
     //when it's matching end tag is parsed by the endElement method
-    private void deleteFromHeap(){
-        heap.remove(heap.size()-1);
-        parsedId -= 1;
+    private void deleteFromHeap(String qName){
+        //some elements have ONLY end tags because they are not populated with
+        //values. So i have to account for that by checking whether or not the last
+        //item in the heap is equal to the qname that called deleteFromHeap
+        //System.out.println("heap: "+ heap.get(heap.size()-1) + "qName: "+qName);
+        if(qName.equalsIgnoreCase(heap.get(heap.size()-1))){
+            heap.remove(heap.size()-1);
+            parsedId -= 1;
+        }else{
+            System.out.println("element: "+qName+" has no value");
+        }
     }
 
     //part of the SAX library. Called after the the parser reads the last line

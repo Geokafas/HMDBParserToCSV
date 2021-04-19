@@ -91,13 +91,14 @@ public class ExportToFile {
 
             //The SAXparser had some trouble with some data entries
             //So the correctOutput method addresses that.
-            var temp = correctOutput(data.get(8));
-            data.set(8,temp);
-            temp = correctOutput(data.get(75));
-            data.set(75,temp);
+            int maxLength = findMax(data);
+            String metabolite_id = data.get(4).get(0);
+            for( int i=1; i<maxLength; i++){
+                data.get(4).add(i,metabolite_id);
+            }
 
             //the first for loop iterates vertically from 0 to the max array size
-            for(int k=0; k<findMax(data); k++) {
+            for(int k=0; k<maxLength; k++) {
                 //inside the buffer strings are placed with a tab in between each entry
                 StringBuilder buffer= new StringBuilder();
                 //the second loop iterates horizontally through the full length of the array of arrays(data array).
@@ -131,20 +132,5 @@ public class ExportToFile {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
-
-    //this method is useful only when parsing the Human metaboline db.
-    //The way the SAX parser proses the this xml means that some entries
-    //contain represented data for witch i have to make some adjustments before printing.
-    public ArrayList<String> correctOutput(ArrayList<String> data){
-        ArrayList<String> list = new ArrayList();
-        for(int i=0; i< data.size(); i++){
-            if(data.get(i).equals("Adult (")){
-                if(data.size()>=i+2){
-                    list.add(data.get(i)+data.get(i+1)+data.get(i+2));
-                }
-            }
-        }
-        return list;
     }
 }
