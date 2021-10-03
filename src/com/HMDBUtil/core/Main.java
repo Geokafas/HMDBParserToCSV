@@ -5,7 +5,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class Main extends DefaultHandler {
     //the path of the XML file is HARDCODED
-    private static final String HMDBFile = "/hmdb_metabolites_processed.xml";
+    private static final String HMDBFile = "hmdb_metabolites_processed.xml";
 
     public static void main(String[] args) {
         //initialize a handler object

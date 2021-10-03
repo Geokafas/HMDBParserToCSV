@@ -1,13 +1,13 @@
 package com.HMDBUtil.core;
-import com.HMDBUtil.Exporters.ExportToFile;
+import com.HMDBUtil.Exporters.ExportToFileSingleLines;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import java.util.*;
 
 public class HMDBHandler extends DefaultHandler {
 
-    private final ExportToFile exporter = new ExportToFile("hmdbMetabolites.csv");
-
+    //private final ExportToFile exporter = new ExportToFile("hmdbMetabolites.csv");
+    private final ExportToFileSingleLines singleLineExporter =  new ExportToFileSingleLines("hmdbMetabolitesSingleLinesCustomized.csv");
     //That is the structure that holds the data extracted from the parse operation
     //of an XML file. It hold a key and an arraylist that contains the parsed data.
     //I used a list because some of the data Nodes contained tables instead of simple
@@ -39,7 +39,7 @@ public class HMDBHandler extends DefaultHandler {
     //of the document
     public void startDocument(){
         //populate the lookup table
-        lookup = exporter.writeToFileElementNodes();
+        lookup = singleLineExporter.writeToFileElementNodes();
         //populate nodesValueHashMap
         for(int i=0; i<lookup.size(); i++){
             nodeValuesHashMap.put(i,new ArrayList<>());
@@ -91,7 +91,7 @@ public class HMDBHandler extends DefaultHandler {
                     data.add(nodeValuesHashMap.get(i));
                 }
                 //call the exporter
-                exporter.makeFile(data);
+                singleLineExporter.makeFile(data);
                 //prepare for reading the next entry by restarting
                 // the global maps and id variables
                 restartGlobals();

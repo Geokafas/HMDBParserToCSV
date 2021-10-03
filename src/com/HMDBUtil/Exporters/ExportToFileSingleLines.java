@@ -1,30 +1,50 @@
 package com.HMDBUtil.Exporters;
+
 import com.HMDBUtil.Preprocessing.DocumentPreProcessor;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 //Creates the final .csv/.tsv file from the XML
-public class ExportToFile {
+public class ExportToFileSingleLines {
     //How the file is going to be called
     public static String Uri;
-
     //class constructor
-    public ExportToFile(String uri){
+    public ExportToFileSingleLines(String uri){
         Uri = uri;
+
+    }
+    private void writeToFileSeperator(int colLength){
+        try{
+            FileOutputStream fileOut =  new FileOutputStream(Uri);
+            for(int i=0; i<colLength; i++){
+
+                fileOut.write("\"Sep=^\""
+                        .getBytes(StandardCharsets.UTF_8));
+                fileOut.write("^".getBytes(StandardCharsets.UTF_8));
+            }
+            fileOut.flush();
+            fileOut.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
     }
 
     //this method creates the lookup table based on an existing structure file of the XML
     public Map<Integer,String> writeToFileElementNodes(){
+
         StringBuilder title = new StringBuilder();
         DocumentPreProcessor preDoc = new DocumentPreProcessor();
 
         //Populate the elementsList with the structure of the XML file
         //based on the output of the DocumentPreProcessor
         Map<Integer,String> elementsList = preDoc.ConstructElementsMap();
-
         //append a tab to the end of every entry so it can be separated later on
         for (Map.Entry me : elementsList.entrySet()) {
             title.append(me.getValue()+"\t");
@@ -80,36 +100,118 @@ public class ExportToFile {
         return max;
     }
 
+    public void makeFile(ArrayList<ArrayList<String>> data)
+    {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(Uri, true);
+
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < data.size(); i++) {
+                if (data.get(i).size() == 1) {
+                    buffer.append("[\"");
+                    buffer.append(data.get(i).get(0).trim().replace("\t", " "));
+                    buffer.append("\"]\t");
+                }
+                else if (!data.get(i).isEmpty())
+                {
+                    data.get(i).removeAll(Arrays.asList(null, "", " "));
+                    buffer.append("[");
+                    for (int k = 0; k < data.get(i).size(); k++) {
+                        buffer.append("\"" + data.get(i).get(k) + "\"");
+                        if(k!=data.get(i).size()-1){
+                            buffer.append(',');
+                        }
+                    }
+                    buffer.append("]");
+                    buffer.append("\t");
+                }else{
+                    buffer.append("\t");
+                }
+            }
+            fileOut.write(buffer.toString().getBytes(StandardCharsets.UTF_8));
+            fileOut.write("\n".getBytes(StandardCharsets.UTF_8));
+            fileOut.flush();
+            buffer.setLength(0);
+            fileOut.close();
+            System.out.println("File Written Successfully");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void makeCustomFile(ArrayList<ArrayList<String>> data)
+    {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(Uri, true);
+
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < data.size(); i++) {
+                if (data.get(i).size() == 1) {
+                    buffer.append(data.get(i).get(0).trim().replace("\t", " "));
+                    buffer.append("\t");
+                }
+                else if (!data.get(i).isEmpty())
+                {
+                    data.get(i).removeAll(Arrays.asList(null, "", " "));
+                    buffer.append("[");
+                    for (int k = 0; k < data.get(i).size(); k++) {
+                        buffer.append("\"" + data.get(i).get(k) + "\"");
+                        if(k!=data.get(i).size()-1){
+                            buffer.append(',');
+                        }
+                    }
+                    buffer.append("]");
+                    buffer.append("\t");
+                }else{
+                    buffer.append("\t");
+                }
+            }
+            fileOut.write(buffer.toString().getBytes(StandardCharsets.UTF_8));
+            fileOut.write("\n".getBytes(StandardCharsets.UTF_8));
+            fileOut.flush();
+            buffer.setLength(0);
+            fileOut.close();
+            System.out.println("File Written Successfully");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     //Responsible for the printing of the final csv/tsv file
     //Takes as input the array with the contents of an entry
     //as returned from the HMDHandler. Reads the array of arrays in
     //a horizontal fashion and places each value in the corresponding
     //XML title.
-    public void makeFile(ArrayList<ArrayList<String>> data){
+    public void makeFile1(ArrayList<ArrayList<String>> data){
+        int i;
+        int k;
         try {
             FileOutputStream fileOut =  new FileOutputStream(Uri, true);
 
             int maxLength = findMax(data);
-            String metabolite_id = data.get(4).get(0);
-            for( int i=1; i<maxLength; i++){
-                data.get(4).add(i,metabolite_id);
-            }
+//            String metabolite_id = data.get(4).get(0);
+//            for( int iter=1; iter<maxLength; iter++){
+//                data.get(4).add(iter,metabolite_id);
+//            }
 
             //the first for loop iterates vertically from 0 to the max array size
-            for(int k=0; k<maxLength; k++) {
+            for(k=0; k<maxLength; k++) {
                 //inside the buffer strings are placed with a tab in between each entry
                 StringBuilder buffer= new StringBuilder();
+
                 //the second loop iterates horizontally through the full length of the array of arrays(data array).
-                for (int i = 0; i < data.size(); i++) {
+                //reads all columns
+                for (i=0; i < data.size(); i++) {
+                    if(k==0) buffer.append("[");
                     //if that cell has value then write it to the buffer
                     if(!data.get(i).isEmpty()){
                         data.get(i).removeAll(Arrays.asList(null, ""," "));
                         //The way the characters method reads from the XML means that some times,
                         //a data that belong to the same entry are read in many passes. So tabs are
                         //placed in the end. In the final file we want a tab character only in the end of an entry
-                        //so in a .tsv scenario data from an entry don't get mixed with data from another.
-                        //In a .tsv data entries are separated on tabs, in a .csv on commas.
-                        buffer.append(data.get(i).get(0).trim().replace("\t"," ")+"\t");
+                        //so in a .tsv scenario data from one entry doesn't get mixed with data from another.
+                        //.tsv data entries are separated on tabs, .csv with commas.
+                        buffer.append(data.get(i).get(0).trim().replace("\t"," ")+"; \t");
                         data.get(i).remove(0);
                     }else{//if not
                         //the arrays inside of arrays (the arrays that contain the actual data of an entry)
@@ -118,6 +220,7 @@ public class ExportToFile {
                         //be ordered correctly i must compensate for this with a tab.
                         buffer.append("\t");
                     }
+                    if(k==data.size()) buffer.append("]");
                 }
 
                 fileOut.write(buffer.toString().getBytes(StandardCharsets.UTF_8));
